@@ -1,81 +1,40 @@
-import { useRef, useState } from "react";
+import useTasks from "./hooks/useTasks";
+import TaskForm from "./components/TaskForm";
+import TaskItem from "./components/TaskItem";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const newTaskRef = useRef(null);
+  const { tasks, addTask, deleteTask, toggleTask, remainingCount } = useTasks();
 
-  const handleAdd = () => {
-    const text = newTaskRef.current.value;
-    if (!text) return;
-    setTasks((prev) => [
-      ...prev,
-      { id: prev.length + 1, title: text, completed: false },
-    ]);
-    newTaskRef.current.value = "";
-  };
-  const handleDelete = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-  const handleToggle = (id) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
-    );
-  };
-  const remainingCount = tasks.filter((task) => !task.completed).length;
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-gray-800">Todo List</h1>
-        <div className="w-full flex items-center gap-2">
-          <input
-            className=" flex-1 border-b-2 border-gray-300 px-1 py-2"
-            type="text"
-            placeholder="Add a new task"
-            ref={newTaskRef}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAdd();
-            }}
-          />
-          <button
-            className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 font-bold"
-            onClick={handleAdd}
-          >
-            +
-          </button>
-        </div>
-        <ul className="flex flex-col gap-2">
-          {tasks.map((task) => (
-            <div
-              className="flex items-center justify-between gap-2 border-2 border-gray-300 px-1 py-2 rounded-md hover:bg-gray-100"
-              key={task.id}
-            >
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`task-${task.id}`}
-                  className="w-4 h-4"
-                  checked={task.completed}
-                  onChange={() => handleToggle(task.id)}
-                />
-                <label
-                  htmlFor={`task-${task.id}`}
-                  className={task.completed ? "line-through text-gray-400" : ""}
-                >
-                  {task.title}
-                </label>
-              </div>
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-gray-600"
-                onClick={() => handleDelete(task.id)}
-              >
-                X
-              </button>
-            </div>
-          ))}
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-200 to-blue-200 p-4">
+      <div className="w-full max-w-md rounded-xl border border-slate-300 bg-white p-6 shadow-xl">
+        <header className="mb-6 border-b border-slate-200 pb-4">
+          <h1 className="text-2xl font-bold text-slate-900">Todo List</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {remainingCount === 0
+              ? "All done — nice work!"
+              : `${remainingCount} task${remainingCount === 1 ? "" : "s"} remaining`}
+          </p>
+        </header>
+
+        <TaskForm onAdd={addTask} />
+
+        <ul className="mt-4 flex flex-col gap-2">
+          {tasks.length === 0 ? (
+            <li className="rounded-lg border border-dashed border-gray-300 py-8 text-center text-sm text-gray-400">
+              No tasks yet. Add one above.
+            </li>
+          ) : (
+            tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+              />
+            ))
+          )}
         </ul>
-        <div>remaining tasks: {remainingCount}</div>
       </div>
     </div>
   );
